@@ -19,10 +19,10 @@ namespace SlotTest
         private int[] _ribbonsPositions = new int[SlotWidth];
         private List<List<int>> _ribbons = new List<List<int>>{
             new List<int>{ 10, 1, 4, 5, 8, 11, 4, 5, 9, 8, 7, 11, 10, 6, 7, 9, 8, 10, 3, 9, 11, 6, 9},
-            new List<int>{ 6, 1, 3, 8, 7, 6, 9, 11, 8, 2, 4, 5, 10, 11, 4, 10, 8, 7, 9, 11, 5, 10, 9},
-            new List<int>{ 6, 1, 3, 8, 7, 6, 9, 11, 8, 2, 4, 5, 10, 11, 4, 10, 8, 7, 9, 11, 5, 10, 9},
-            new List<int>{ 6, 1, 3, 8, 7, 6, 9, 11, 8, 2, 4, 5, 10, 11, 4, 10, 8, 7, 9, 11, 5, 10, 9},
-            new List<int>{ 6, 1, 3, 8, 7, 6, 9, 11, 8, 2, 4, 5, 10, 11, 4, 10, 8, 7, 9, 11, 5, 10, 9}
+            new List<int>{ 6, 1, 3, 8, 7, 6, 9, 11, 2, 8, 4, 5, 10, 11, 4, 10, 8, 7, 9, 11, 5, 10, 9},
+            new List<int>{ 6, 1, 3, 8, 7, 6, 9, 11, 2, 8, 4, 5, 10, 11, 4, 10, 8, 7, 9, 11, 5, 10, 9},
+            new List<int>{ 6, 1, 3, 8, 7, 6, 9, 11, 2, 8, 4, 5, 10, 11, 4, 10, 8, 7, 9, 11, 5, 10, 9},
+            new List<int>{ 6, 1, 3, 8, 7, 6, 9, 11, 2, 8, 4, 5, 10, 11, 4, 10, 8, 7, 9, 11, 5, 10, 9}
         };
         private Dictionary<int, double[]> _payTable = new Dictionary<int, double[]>()
         {
@@ -58,53 +58,43 @@ namespace SlotTest
             { 10, 0 }
         };
         private double _averageFreespinsWithRetrigger;
-        private double _amountSlotPositions;
+        private const double IterationsCount = 10000000;
 
         public void Test()
         {
-            CountAmountSlotPositions();
+            //CountAmountSlotPositions();
             double RTP = 0f;
             double amountWinX = 0f;
-            for (_mas[0] = 22; _mas[0] != -1; _mas[0]--)
+
+            for (int i = 0; i < IterationsCount; i++)
             {
-                for (_mas[1] = 22; _mas[1] != -1; _mas[1]--)
-                {
-                    for (_mas[2] = 22; _mas[2] != -1; _mas[2]--)
-                    {
-                        for (_mas[3] = 22; _mas[3] != -1; _mas[3]--)
-                        {
-                            for (_mas[4] = 22; _mas[4] != -1; _mas[4]--)
-                            {
-                                GenerateNewMatrix();
-                                CheckForABonusTrigger();
-                                amountWinX += CountWinX();
-                            }
-                        }
-                    }
-                }
+                GenerateNewMatrix();
+                CheckForABonusTrigger();
+                amountWinX += CountWinX();
             }
+
             foreach (var item in _hitFrequency)
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    item.Value[i] /= _amountSlotPositions;
+                    item.Value[i] /= IterationsCount;
                 }
             }
             ShowBonusGamesInfo();
             ShowHitFrequencyTable();
-            RTP = amountWinX / _amountSlotPositions;
+            RTP = amountWinX / IterationsCount;
             Console.WriteLine($"RTP основной игры = {RTP}");
             Console.WriteLine($"RTP всей игры = {RTP + RTP * _averageFreespinsWithRetrigger}");
         }
 
-        private void CountAmountSlotPositions()
-        {
-            _amountSlotPositions = 1;
-            foreach (var ribbon in _ribbons)
-            {
-                _amountSlotPositions *= ribbon.Count;
-            }
-        }
+        //private void CountAmountSlotPositions()
+        //{
+        //    IterationsCount = 1;
+        //    foreach (var ribbon in _ribbons)
+        //    {
+        //        IterationsCount *= ribbon.Count;
+        //    }
+        //}
 
         private void ShowHitFrequencyTable()
         {
@@ -119,7 +109,7 @@ namespace SlotTest
                     Console.WriteLine();
                 }
             }
-            
+
         }
 
         private void CheckForABonusTrigger()
@@ -129,7 +119,7 @@ namespace SlotTest
             {
                 for (int j = 0; j < SlotWidth; j++)
                 {
-                    if (_matrix[i,j] == 1)
+                    if (_matrix[i, j] == 1)
                     {
                         scattersCount++;
                     }
@@ -151,16 +141,16 @@ namespace SlotTest
                 amountBonusSpins += item.Key * item.Value;
                 amountBonusTriggers += item.Value;
             }
-            Console.WriteLine($"Вероятность фриспинов за спин = {amountBonusTriggers / _amountSlotPositions}");
-            averageFreespinsWithoutRetrigger = amountBonusSpins / _amountSlotPositions;
+            Console.WriteLine($"Вероятность фриспинов за спин = {amountBonusTriggers / IterationsCount}");
+            averageFreespinsWithoutRetrigger = amountBonusSpins / IterationsCount;
             Console.WriteLine($"Среднее количество фриспинов за 1 спин без ретриггера = {averageFreespinsWithoutRetrigger}");
-            _averageFreespinsWithRetrigger = amountBonusSpins / _amountSlotPositions;
+            _averageFreespinsWithRetrigger = amountBonusSpins / IterationsCount;
             _averageFreespinsWithRetrigger = averageFreespinsWithoutRetrigger;
             double temp = averageFreespinsWithoutRetrigger;
             for (int i = 0; i < 1000; i++)
             {
                 temp *= averageFreespinsWithoutRetrigger;
-                _averageFreespinsWithRetrigger += temp;               
+                _averageFreespinsWithRetrigger += temp;
             }
             Console.WriteLine($"С ретриггером: {_averageFreespinsWithRetrigger}");
         }
@@ -200,7 +190,7 @@ namespace SlotTest
                 if (multiple > 2 && firstValues[i1] > 2)
                     _hitFrequency[firstValues[i1]][multiple - 3] += paylinesCount;
                 winX += GetWinXFromPayTable(firstValues[i1], multiple) * paylinesCount;
-            }       
+            }
             return winX;
         }
 
@@ -253,9 +243,14 @@ namespace SlotTest
 
         private void GenerateRibbonsPositions()
         {
+            //for (int i = 0; i < SlotWidth; i++)
+            //{
+            //    _ribbonsPositions[i] = _mas[i];
+            //}
+            Random random = new Random();
             for (int i = 0; i < SlotWidth; i++)
             {
-                _ribbonsPositions[i] = _mas[i];
+                _ribbonsPositions[i] = random.Next(0, _ribbons[i].Count);
             }
         }
     }
